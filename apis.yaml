@@ -71,7 +71,7 @@ paths:
         400:
           description: Missing data
         401:
-          description: This request need's a valid user token          
+          description: This request need's a valid user token
     get:
       security:
         - bearerAuth: []
@@ -136,7 +136,7 @@ paths:
                 additionalProperties: false
                 type: object
                 properties:
-                  otpToken: 
+                  otpToken:
                     type: string
                     pattern: ^[0-9a-z]{32}$
                     maxLength: 32
@@ -147,7 +147,89 @@ paths:
           description: mobile number already exists
         452:
           description: this app is not available in this country yet
+    patch:
+      tags:
+        - user
+      description: Signin a user
+      summary: User sign in
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - countryId
+                - mobile
+                - password
+              properties:
+                countryId:
+                  type: integer
+                  minimum: 1
+                  maximum: 200
+                  format: int32
+                mobile:
+                  type: string
+                  minLength: 8
+                  maxLength: 32
+                  pattern: ^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$
+                password:
+                  type: string
+                  minLength: 8
+                  maxLength: 250
+                  pattern: ^.{8,50}$
+              example:
+                countryId: 1
+                mobile: "096123456789"
+                password: "12345678test"
 
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  token:
+                    maxLength: 32
+                    type: string
+                    pattern: ^[0-9a-z]{32}$
+        400:
+          description: Missing data
+
+        401:
+          description: Wrong login info
+
+        422:
+          description: This account has been disabled
+
+  /wishlist/{productId}:
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - wishlist
+      summary: Deletes a from Wishlist
+      description: "Delete from Wishlist"
+      parameters:
+        - name: "productId"
+          in: path
+          required: true
+          schema:
+            type: integer
+            maximum: 999999
+            minimum: 0
+            format: int32
+      responses:
+        "200":
+          description: "success"
+        "401":
+          description: "This request need's a valid user token"
+        "404":
+          description: "No such item"
 components:
   responses:
     notFound:
@@ -180,6 +262,35 @@ components:
           example: "https://www.domain.com/path/photo.png"
           pattern: ^[0-9a-z:/\.]+$
           maxLength: 250
+    User:
+      additionalProperties: false
+      type: object
+      properties:
+        fullName:
+          type: string
+          maxLength: 50
+          pattern: ^.{3,50}$
+          example: John Doe
+        email:
+          type: string
+          format: email
+          example: example@example.com
+        countryId:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 200
+          example: 10
+        mobile:
+          type: string
+          minLength: 8
+          maxLength: 32
+          pattern: ^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$
+        token:
+          type: string
+          pattern: ^[0-9a-z]{32}$
+          maxLength: 32
+
 
   securitySchemes:
     bearerAuth:
